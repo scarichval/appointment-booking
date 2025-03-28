@@ -88,6 +88,10 @@ function App() {
   console.log("Selected date as Date obj:", selectedDate.toString());
   console.log("BookedTimes: ", bookedTimes);
 
+  const availableTimes = generateTimeSlots().filter(
+    (slot) => !bookedTimes.includes(slot)
+  );
+
   return (
     <div
       style={{
@@ -120,34 +124,40 @@ function App() {
           value={date}
           onChange={(e) => setDate(e.target.value)}
           required
-          min={new Date().toISOString().split('T')[0]}
+          min={new Date().toISOString().split("T")[0]}
           style={{
             padding: "0.5rem",
             borderRadius: "5px",
             border: "1px solid #ccc",
           }}
         />
-        <select
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-          required
-          style={{
-            padding: "0.5rem",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-          }}
-        >
-          <option value="">Select a time slot</option>
-          {generateTimeSlots().map((slot) => (
-            <option
-              key={slot}
-              value={slot}
-              disabled={bookedTimes.includes(slot)}
-            >
-              {slot} {bookedTimes.includes(slot) ? "Booked" : "Available"}
-            </option>
-          ))}
-        </select>
+
+        <div>
+          <select
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            required
+            style={{
+              padding: "0.5rem",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+            }}
+          >
+            <option value="">Select a time slot</option>
+            {availableTimes
+              .filter((slot) => !bookedTimes.includes(slot))
+              .map((slot) => (
+                <option key={slot} value={slot}>
+                  {slot}
+                </option>
+              ))}
+          </select>
+          {availableTimes.length === 0 && (
+            <p style={{ color: "red", textAlign: "center" }}>
+              No available slots for this day
+            </p>
+          )}
+        </div>
         <input
           type="text"
           value={clientName}
