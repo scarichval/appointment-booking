@@ -130,7 +130,6 @@ function ClientBooking(){
             }}
           />
   
-          <div>
             <select
               value={time}
               onChange={(e) => setTime(e.target.value)}
@@ -155,7 +154,8 @@ function ClientBooking(){
                 No available slots for this day
               </p>
             )}
-          </div>
+          
+
           <input
             type="text"
             value={clientName}
