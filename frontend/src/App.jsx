@@ -23,14 +23,21 @@ const isSameDay = (d1, d2) =>
   d1.getMonth() === d2.getMonth() &&
   d1.getDate() === d2.getDate();
 
+
 function App() {
   const [appointments, setAppointments] = useState([]);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("09:00");
   const [clientName, setClientName] = useState("");
   const [phone, setPhone] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  // const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
+  const flashMessage = (text, ms = 4000) => {
+    setSuccessMessage(text);
+    setTimeout(() => setSuccessMessage(''), ms);
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const datetime = new Date(`${date}T${time}`);
@@ -47,19 +54,14 @@ function App() {
         body: JSON.stringify(newAppt),
       });
 
-      if (response.status === 409) {
-        setErrorMessage(
-          "This time slot is already taken. Please choose another."
-        );
-        return;
-      }
-
       const savedAppt = await response.json();
       setAppointments((prev) => [...prev, savedAppt]);
 
+      flashMessage(`Thank you, ${clientName}. Your appointment is booked for ${date} ${time}.`);
       setDate("");
       setClientName("");
       setPhone("");
+
     } catch (error) {
       console.error("Error creating appointment", error);
     }
@@ -101,8 +103,8 @@ function App() {
         fontFamily: "Arial, sans-serif",
       }}
     >
-      {errorMessage && (
-        <p style={{ color: "red", textAlign: "center" }}>{errorMessage}</p>
+      {successMessage && (
+        <p style={{ color: "green", textAlign: "center" }}>{successMessage}</p>
       )}
       <h1
         style={{ fontSize: "3rem", textAlign: "center", marginBottom: "2rem" }}
