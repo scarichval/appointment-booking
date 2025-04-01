@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { io } from "socket.io-client";
+const socket = io('http://localhost:4000');
 
 function BarberView() {
   const [appointments, setAppointments] = useState([]);
@@ -15,8 +17,14 @@ function BarberView() {
     };
     
     fetchAppointments();
-    const interval = setInterval(fetchAppointments, 10000);
-    return () => clearInterval(interval);
+
+    socket.on('new-appointment', () => {
+        console.log('📡 New appointment received!');
+        fetchAppointments();
+    });
+
+    return () => socket.off('new-appointment');
+    
   }, []);
 
   return (

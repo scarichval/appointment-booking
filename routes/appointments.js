@@ -4,6 +4,7 @@ const router = express.Router();
 
 // POST to create an appointment slot
 router.post('/', async (req, res) => {
+  const io = req.app.get('io');
   const { datetime, clientName } = req.body;
   if (!datetime) return res.status(400).json({ message: "Date is required" });
   if (!clientName) return res.status(400).json({ message: "clientName is required" });
@@ -16,6 +17,7 @@ router.post('/', async (req, res) => {
 
   try {
     await newApptmnt.save();
+    io.emit('new-appointment', newApptmnt);
     res.status(201).json(newApptmnt);
   } catch (error) {
     res.status(500).json({ message: 'Error creating appointment', error: error.message });

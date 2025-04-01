@@ -1,11 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const http = require('http');
+const { Server } = require('socket.io');
 
 // Import routes 
 const appointmentsRoutes = require('./routes/appointments.js');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: '*'
+    }
+});
+
+// Store io in app locals so routes can access it
+app.set('io', io);
+
 app.use(cors());
 app.use(express.json());
 
@@ -19,7 +31,7 @@ app.use('/api/appointments', appointmentsRoutes);
 
 // listen
 const PORT = 4000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 })
 

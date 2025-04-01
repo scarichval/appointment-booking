@@ -26,7 +26,6 @@ function ClientBooking(){
     const [time, setTime] = useState("09:00");
     const [clientName, setClientName] = useState("");
     const [phone, setPhone] = useState("");
-    // const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
   
     const flashMessage = (text, ms = 4000) => {
@@ -52,6 +51,8 @@ function ClientBooking(){
   
         const savedAppt = await response.json();
         setAppointments((prev) => [...prev, savedAppt]);
+
+        // setTimeout(() => localStorage.setItem("newBooking", Date.now()), 5000);
   
         flashMessage(`Thank you, ${clientName}. Your appointment is booked for ${date} ${time}.`);
         setDate("");
@@ -82,9 +83,6 @@ function ClientBooking(){
     const bookedTimes = appointments
       .filter((appt) => isSameDay(new Date(appt.datetime), selectedDate))
       .map((appt) => new Date(appt.datetime).toTimeString().slice(0, 5));
-  
-    console.log("Selected date as Date obj:", selectedDate.toString());
-    console.log("BookedTimes: ", bookedTimes);
   
     const availableTimes = generateTimeSlots().filter(
       (slot) => !bookedTimes.includes(slot)
