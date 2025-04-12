@@ -39,13 +39,20 @@ router.get('/', async (req, res) => {
 // Update appointments
 
 // Delete an appointment
-router.delete('/:apptmntId', async (req, res) => {
-  const { apptmntId } = req.params;
+router.delete('/:id', async (req, res) => {
   try {
-    const deletedApptmnt = await Appointment.deleteOne({ _id: apptmntId });
-    res.status(200).json(deletedApptmnt);
+    const { id } = req.params;
+    const result = await Appointment.deleteOne({ _id: id });
+
+    if (result.deletedCount === 1) {
+      const io = req.app.get('io');
+      io.emit('appointment-deleted', id); 
+      return res.sendStatus(204); // No Content
+    } else {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting appointment', error: error.message });
+    return res.status(500).json({ message: "Error deleting", error: error.message });
   }
 });
 

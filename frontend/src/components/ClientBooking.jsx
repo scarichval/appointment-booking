@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { io } from "socket.io-client";
+
+const socket  = io("http://localhost:4000");
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -77,6 +80,18 @@ function ClientBooking(){
       };
   
       fetchAppointments();
+      
+      const handleDeleted = () => {
+        console.log("🗑 Appointment deleted!");
+        fetchAppointments();
+      }
+
+      socket.on("appointment-deleted", handleDeleted);
+      
+      return () => {
+        socket.off("appointment-deleted", handleDeleted);
+      };
+
     }, []);
   
     const selectedDate = new Date(date + "T00:00"); // force timezone offset
