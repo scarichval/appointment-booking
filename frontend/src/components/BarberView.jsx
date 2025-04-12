@@ -44,6 +44,11 @@ function BarberView() {
   return (
     <div style={{ padding: "2rem", fontFamily: "Arial" }}>
       <h1>📋 Today's Appointments</h1>
+      {appointments.length === 0 && (
+      <p style={{ color: "#999", textAlign: "center", marginTop: "1rem" }}>
+        No appointments booked yet.
+      </p>
+      )}
       <ul>
         {appointments.map((appt) => {
           const dt = new Date(appt.datetime);
