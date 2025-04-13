@@ -5,6 +5,7 @@ const socket = io("http://localhost:4000");
 function BarberView() {
   const [appointments, setAppointments] = useState([]);
   const [hoveredId, setHoveredId] = useState(null);
+  const [filterDate, setFilterDate] = useState("");
 
   const handleDelete = async (id) => {
     try {
@@ -41,6 +42,13 @@ function BarberView() {
     return () => socket.off("new-appointment");
   }, []);
 
+
+  const filteredAppointments = appointments.filter((appt) => {
+    if (!filterDate) return true;
+    const apptDate = new Date(appt.datetime).toISOString().split("T")[0];
+    return apptDate === filterDate;
+  });
+  
   return (
     <div style={{ padding: "2rem", fontFamily: "Arial" }}>
       <h1>📋 Today's Appointments</h1>
@@ -49,8 +57,25 @@ function BarberView() {
         No appointments booked yet.
       </p>
       )}
+      <label style={{ display: "block", marginBottom: "1rem" }}>
+        Filter by date:{" "}
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          style={{ padding: "0.4rem", borderRadius: "5px", border: "1px solid #ccc" }}
+        />
+      </label>
+      
+      {filteredAppointments.length === 0 && (
+        <p style={{ color: "#999", textAlign: "center", marginTop: "1rem" }}>
+        No appointments for this day.
+      </p>
+      )}
+
       <ul>
-        {appointments.map((appt) => {
+        {filteredAppointments
+        .map((appt) => {
           const dt = new Date(appt.datetime);
           return (
             <li
