@@ -8,6 +8,9 @@ function BarberView() {
   const [filterDate, setFilterDate] = useState("");
 
   const handleDelete = async (id) => {
+    const confirmationDelete = window.confirm("Are you sure you want to delete this appointment?");
+    if (!confirmationDelete) return;
+
     try {
       const res = await fetch(`http://localhost:4000/api/appointments/${id}`, {
         method: "DELETE",
