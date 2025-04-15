@@ -53,7 +53,12 @@ function BarberView() {
   });
   
   return (
-    <div style={{ padding: "2rem", fontFamily: "Arial" }}>
+    <div style={{
+      background: "#111",
+      color: "#fff",
+      padding: "2rem",
+      fontFamily: "Arial, sans-serif",
+    }}>
       <h1>📋 Today's Appointments</h1>
       {appointments.length === 0 && (
       <p style={{ color: "#999", textAlign: "center", marginTop: "1rem" }}>

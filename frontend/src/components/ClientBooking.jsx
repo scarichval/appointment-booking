@@ -31,7 +31,7 @@ function ClientBooking(){
     const [phone, setPhone] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
   
-    const flashMessage = (text, ms = 4000) => {
+    const flashMessage = (text, ms = 10000) => {
       setSuccessMessage(text);
       setTimeout(() => setSuccessMessage(''), ms);
     };
@@ -208,7 +208,7 @@ function ClientBooking(){
           </button>
         </form>
   
-        <ul style={{ listStyle: "none", padding: 0, textAlign: "center" }}>
+        {/* <ul style={{ listStyle: "none", padding: 0, textAlign: "center" }}>
           {appointments.map((appt, index) => {
             const dt = new Date(appt.datetime);
             return (
@@ -225,7 +225,7 @@ function ClientBooking(){
               </li>
             );
           })}
-        </ul>
+        </ul> */}
       </div>
     );
 
