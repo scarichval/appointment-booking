@@ -58,5 +58,25 @@ router.delete('/:id', async (req, res) => {
 
 
 // complete an appointment
+router.patch('/:id', async (req, res) => {
+  const { id } = req.params;
+  const { isCompleted } = req.body;
+
+  try {
+    const updated = await Appointment.findByIdAndUpdate(id,
+      {isCompleted},
+      {new: true}
+    );
+
+    if(!updated) return res.status(404).json({message: "Appointment not found"});
+
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({message: "Error updating appointment", error: error.message});
+  }
+})
+
+
+
 
 module.exports = router;
