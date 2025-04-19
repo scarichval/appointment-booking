@@ -57,6 +57,6 @@ router.delete('/:id', async (req, res) => {
 });
 
 
-// PUT to book/unbook an appointment
+// complete an appointment
 
 module.exports = router;

@@ -6,6 +6,7 @@ function BarberView() {
   const [appointments, setAppointments] = useState([]);
   const [hoveredId, setHoveredId] = useState(null);
   const [filterDate, setFilterDate] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
 
   const handleDelete = async (id) => {
     const confirmationDelete = window.confirm("Are you sure you want to delete this appointment?");
@@ -21,6 +22,17 @@ function BarberView() {
       }
     } catch (error) {
       console.error("Error deleting appointment", error);
+    }
+  };
+
+  const onComplete = async (id) => {
+    const confirmCompletion = window.confirm('Mark this appointment as completed?');
+    if(!confirmCompletion) return;
+
+    try {
+      console.log('in process')
+    } catch (error) {
+      console.error('in the catch', error);
     }
   };
 
@@ -94,8 +106,7 @@ function BarberView() {
                 position: "relative",
                 paddingRight: "2rem",
               }}
-              onMouseEnter={() => setHoveredId(appt._id)}
-              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => setSelectedId(appt._id === selectedId ? null : appt._id)}
             >
               <strong>{dt.toLocaleDateString()}</strong> at{" "}
               <strong>
@@ -106,10 +117,24 @@ function BarberView() {
               </strong>
               {appt.clientName && ` — ${appt.clientName}`}
               {appt.phone && ` (${appt.phone})`}
-              {hoveredId === appt._id && (
+              {selectedId === appt._id && (
+                <>
                 <button
                   onClick={() => handleDelete(appt._id)}
                   style={{
+                    position: "absolute",
+                    right: "50px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "transparent",
+                    border: "none",
+                    color: "red",
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                  }}
+                > 🗑 </button>
+
+                <button onClick={() => onComplete(appt._id)} style={{
                     position: "absolute",
                     right: 0,
                     top: "50%",
@@ -119,10 +144,9 @@ function BarberView() {
                     color: "red",
                     cursor: "pointer",
                     fontSize: "1rem",
-                  }}
-                >
-                  🗑
-                </button>
+                  }}>✅</button>
+
+                </>
               )}
             </li>
           );
