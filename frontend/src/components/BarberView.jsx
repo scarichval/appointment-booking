@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
-const socket = io("http://localhost:4000");
+const BASE_URL = "http://192.168.2.182:4000";
+
+const socket = io(`${BASE_URL}`);
+
 
 function BarberView() {
   const [appointments, setAppointments] = useState([]);
@@ -15,7 +18,7 @@ function BarberView() {
     if (!confirmationDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:4000/api/appointments/${id}`, {
+      const res = await fetch(`${BASE_URL}/api/appointments/${id}`, {
         method: "DELETE",
       });
 
@@ -25,6 +28,7 @@ function BarberView() {
     } catch (error) {
       console.error("Error deleting appointment", error);
     }
+
   };
 
   const onComplete = async (id) => {
@@ -34,7 +38,7 @@ function BarberView() {
     if (!confirmCompletion) return;
 
     try {
-      const res = await fetch(`http://localhost:4000/api/appointments/${id}`, {
+      const res = await fetch(`${BASE_URL}/api/appointments/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isCompleted: true }),
@@ -49,19 +53,22 @@ function BarberView() {
     } catch (error) {
       console.error("Error completing appointment", error);
     }
+
+
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/appointments`);
+      const data = await response.json();
+      setAppointments(data);
+    } catch (error) {
+      console.error("Error fetching appointments", error);
+    }
   };
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const response = await fetch("http://localhost:4000/api/appointments");
-        const data = await response.json();
-        setAppointments(data);
-      } catch (error) {
-        console.error("Error fetching appointments", error);
-      }
-    };
-
+    
     fetchAppointments();
 
     socket.on("new-appointment", () => {
@@ -69,7 +76,21 @@ function BarberView() {
       fetchAppointments();
     });
 
-    return () => socket.off("new-appointment");
+    socket.on("appointment-deleted", () => {
+      console.log("🗑 Appointment deleted!");
+      fetchAppointments();
+    });
+
+    socket.on("appointment-completed", () => {
+      console.log("Appointment completed!");
+      fetchAppointments();
+    })
+
+    return () => {
+      socket.off("new-appointment");
+      socket.off("appointment-deleted");
+      socket.off("appointment-completed");
+    }
   }, []);
 
   const filteredAppointments = appointments.filter((appt) => {
@@ -85,14 +106,22 @@ function BarberView() {
         color: "#fff",
         padding: "2rem",
         fontFamily: "Arial, sans-serif",
+        maxWidth: "600px",       // ✅ largeur max lisible
+        margin: "0 auto",         // ✅ centrage horizontal
+        overflowX: "hidden",      // ✅ empêche débordement
+        minHeight: "100vh",       // 📱 assure hauteur complète
       }}
     >
-      <h1>📋 Today's Appointments</h1>
+      <h1 style={{ fontSize: "2rem", textAlign: "center", marginBottom: "1.5rem" }}>
+        📋 Today's Appointments
+      </h1>
+  
       {appointments.length === 0 && (
         <p style={{ color: "#999", textAlign: "center", marginTop: "1rem" }}>
           No appointments booked yet.
         </p>
       )}
+  
       <label style={{ display: "block", marginBottom: "1rem" }}>
         Filter by date:{" "}
         <input
@@ -103,81 +132,95 @@ function BarberView() {
             padding: "0.4rem",
             borderRadius: "5px",
             border: "1px solid #ccc",
+            width: "100%",
+            fontSize: "16px",
           }}
         />
       </label>
-
+  
       {filteredAppointments.length === 0 && (
-        <p style={{ color: "#999", textAlign: "center", marginTop: "1rem" }}>
+        <p style={{ color: "#999", textAlign: "center", marginTop: "1rem", fontSize: "16px" }}>
           No appointments for this day.
         </p>
       )}
-
-      <ul>
+  
+      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
         {filteredAppointments.map((appt) => {
           const dt = new Date(appt.datetime);
           return (
             <li
               key={appt._id}
               style={{
-                marginBottom: "0.5rem",
+                marginBottom: "1rem",
                 fontSize: "1.1rem",
                 position: "relative",
-                paddingRight: "2rem",
-                opacity: appt.isCompleted ? 0.5 : 1
+                padding: "1rem",
+                paddingRight: "5.5rem", // espace pour les boutons
+                background: "#222",
+                borderRadius: "8px",
+                overflow: "hidden",     // 🚫 évite dépassement
+                opacity: appt.isCompleted ? 0.5 : 1,
               }}
               onClick={() =>
                 setSelectedId(appt._id === selectedId ? null : appt._id)
               }
             >
-              <strong>{dt.toLocaleDateString()}</strong> at{" "}
-              <strong>
-                {dt.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </strong>
-              {appt.clientName && ` — ${appt.clientName}`}
-              {appt.phone && ` (${appt.phone})`}
-              {appt.isCompleted && (<em style={{ marginLeft: "0.5rem", color: "#ccc" }}>(Completed)</em>)}
+              <div>
+                <strong>{dt.toLocaleDateString()}</strong> at{" "}
+                <strong>
+                  {dt.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </strong>
+                {appt.clientName && ` — ${appt.clientName}`}
+                {appt.phone && ` (${appt.phone})`}
+                {appt.isCompleted && (
+                  <em style={{ marginLeft: "0.5rem", color: "#ccc" }}>
+                    (Completed)
+                  </em>
+                )}
+              </div>
+  
               {selectedId === appt._id && (
                 <>
                   <button
                     onClick={() => handleDelete(appt._id)}
                     style={{
                       position: "absolute",
-                      right: "50px",
+                      right: "2.5rem",
                       top: "50%",
                       transform: "translateY(-50%)",
                       background: "transparent",
                       border: "none",
                       color: "red",
                       cursor: "pointer",
-                      fontSize: "1rem",
+                      fontSize: "20px",
+                      top: "calc(50% - 10px)"
                     }}
                   >
-                    {" "}
-                    🗑{" "}
+                    🗑
                   </button>
-
-                  <button
-                    onClick={() => onComplete(appt._id)}
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "transparent",
-                      border: "none",
-                      color: "red",
-                      cursor: "pointer",
-                      fontSize: "1rem",
-                    }}
-                  >
-                    ✅
-                  </button>
-
-                  
+  
+                  {!appt.isCompleted && (
+                    <button
+                      onClick={() => onComplete(appt._id)}
+                      style={{
+                        position: "absolute",
+                        right: "0.5rem",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "transparent",
+                        border: "none",
+                        color: "green",
+                        cursor: "pointer",
+                        fontSize: "20px",
+                        top: "calc(50% - 10px)"
+                      }}
+                    >
+                      ✅
+                    </button>
+                  )}
                 </>
               )}
             </li>
@@ -186,6 +229,7 @@ function BarberView() {
       </ul>
     </div>
   );
+  
 }
 
 export default BarberView;
